@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
+import React from "react";
 import { runAudit } from "@/lib/auditEngine";
+
 import {
   BarChart,
   Bar,
@@ -13,7 +14,7 @@ import {
 
 import jsPDF from "jspdf";
 
-export interface ToolData {
+export interface ToolInput {
   tool: string;
   plan: string;
   spend: number;
@@ -30,23 +31,25 @@ export interface AuditResult {
 }
 
 export default function ResultsPage() {
-  const results: AuditResult[] = useMemo(() => {
-    if (typeof window === "undefined") return [];
+  const stored =
+    typeof window !== "undefined"
+      ? localStorage.getItem("audit-tools")
+      : null;
 
-    const stored = localStorage.getItem("audit-tools");
+  const parsed: ToolInput[] = stored
+    ? JSON.parse(stored)
+    : [];
 
-    if (!stored) return [];
-
-    const parsed: ToolData[] = JSON.parse(stored);
-
-    const formatted = parsed.map((item) => ({
+  const formatted: ToolInput[] = parsed.map(
+    (item: ToolInput) => ({
       ...item,
       spend: Number(item.spend),
       seats: Number(item.seats),
-    }));
+    })
+  );
 
-    return runAudit(formatted);
-  }, []);
+  const results: AuditResult[] =
+    runAudit(formatted);
 
   const totalMonthlySavings = results.reduce(
     (acc, item) => acc + item.monthlySavings,
@@ -61,7 +64,8 @@ export default function ResultsPage() {
   const biggestSaving =
     results.length > 0
       ? results.reduce((prev, current) =>
-          prev.monthlySavings > current.monthlySavings
+          prev.monthlySavings >
+          current.monthlySavings
             ? prev
             : current
         )
@@ -71,7 +75,12 @@ export default function ResultsPage() {
     const doc = new jsPDF();
 
     doc.setFontSize(22);
-    doc.text("AI Spend Audit Report", 20, 20);
+
+    doc.text(
+      "AI Spend Audit Report",
+      20,
+      20
+    );
 
     doc.setFontSize(14);
 
@@ -92,7 +101,11 @@ export default function ResultsPage() {
     results.forEach((item, index) => {
       doc.setFontSize(16);
 
-      doc.text(`${index + 1}. ${item.tool}`, 20, y);
+      doc.text(
+        `${index + 1}. ${item.tool}`,
+        20,
+        y
+      );
 
       y += 10;
 
@@ -131,7 +144,9 @@ export default function ResultsPage() {
       y += 15;
     });
 
-    doc.save("AI-Spend-Audit-Report.pdf");
+    doc.save(
+      "AI-Spend-Audit-Report.pdf"
+    );
   };
 
   return (
@@ -173,40 +188,50 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* AI Summary */}
+        {/* Summary */}
         <div className="bg-white rounded-2xl shadow p-6 mb-8">
           <h2 className="text-2xl font-bold mb-4">
             AI Optimization Summary
           </h2>
 
           <p className="text-gray-700 leading-7">
-            Based on your current AI stack, your team may be
-            overspending on redundant or enterprise-grade plans.
-            The biggest optimization opportunity appears in{" "}
-            <strong>{biggestSaving?.tool}</strong>, where
-            switching plans could significantly reduce recurring
-            costs.
+            Based on your current AI stack,
+            your team may be overspending on
+            redundant or enterprise-grade
+            plans.
+
+            The biggest optimization
+            opportunity appears in{" "}
+            <strong>
+              {biggestSaving?.tool}
+            </strong>
+            .
           </p>
 
           <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-4">
             <p className="text-green-700 font-medium">
-              Estimated Annual Savings: $
-              {totalYearlySavings}
+              Estimated Annual Savings:
+              ${totalYearlySavings}
             </p>
           </div>
         </div>
 
-        {/* Savings Chart */}
+        {/* Chart */}
         <div className="bg-white rounded-2xl shadow p-6 mb-8">
           <h2 className="text-2xl font-bold mb-6">
             Savings Breakdown
           </h2>
 
           <div className="h-[350px]">
-            <ResponsiveContainer width="100%" height="100%">
+            <ResponsiveContainer
+              width="100%"
+              height="100%"
+            >
               <BarChart data={results}>
                 <XAxis dataKey="tool" />
+
                 <YAxis />
+
                 <Tooltip />
 
                 <Bar dataKey="monthlySavings" />
@@ -215,7 +240,7 @@ export default function ResultsPage() {
           </div>
         </div>
 
-        {/* Download Button */}
+        {/* PDF Button */}
         <div className="flex justify-end mb-6">
           <button
             onClick={downloadPDF}
@@ -238,17 +263,22 @@ export default function ResultsPage() {
                 </h2>
 
                 <span className="bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-medium">
-                  Save ${item.monthlySavings}/mo
+                  Save $
+                  {item.monthlySavings}/mo
                 </span>
               </div>
 
               <p className="text-gray-700 mb-2">
-                <strong>Current Plan:</strong>{" "}
+                <strong>
+                  Current Plan:
+                </strong>{" "}
                 {item.currentPlan}
               </p>
 
               <p className="text-gray-700 mb-2">
-                <strong>Recommendation:</strong>{" "}
+                <strong>
+                  Recommendation:
+                </strong>{" "}
                 {item.recommendation}
               </p>
 
