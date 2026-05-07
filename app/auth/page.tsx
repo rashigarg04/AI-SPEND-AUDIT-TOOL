@@ -42,9 +42,10 @@ export default function AuthPage() {
       }
 
       router.push("/");
-    } catch (error: any) {
-      alert(error.message);
-    }
+    } catch (error: unknown) {
+      if(error instanceof Error){
+        alert(error.message);
+      }
   };
 
   const handleLogout = async () => {
