@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { auth } from "@/lib/firebase";
 
 import {
@@ -9,17 +11,23 @@ import {
   signOut,
 } from "firebase/auth";
 
-import { useRouter } from "next/navigation";
-
 export default function AuthPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLogin, setIsLogin] = useState(true);
+  const [email, setEmail] = useState<string>("");
+  const [password, setPassword] = useState<string>("");
+  const [isLogin, setIsLogin] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const handleAuth = async () => {
+    if (!email || !password) {
+      alert("Please fill all fields");
+      return;
+    }
+
     try {
+      setLoading(true);
+
       if (isLogin) {
         await signInWithEmailAndPassword(
           auth,
@@ -45,13 +53,23 @@ export default function AuthPage() {
       } else {
         alert("Authentication failed");
       }
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
 
-    alert("Logged out!");
+      alert("Logged out!");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Logout failed");
+      }
+    }
   };
 
   return (
@@ -82,9 +100,14 @@ export default function AuthPage() {
 
           <button
             onClick={handleAuth}
-            className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition"
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50"
           >
-            {isLogin ? "Login" : "Sign Up"}
+            {loading
+              ? "Please wait..."
+              : isLogin
+              ? "Login"
+              : "Sign Up"}
           </button>
 
           <button
