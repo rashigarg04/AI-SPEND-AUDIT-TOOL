@@ -15,14 +15,27 @@ import { useRouter } from "next/navigation";
 export default function AuthPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState<string>("");
 
-  const [password, setPassword] = useState("");
+  const [password, setPassword] =
+    useState<string>("");
 
-  const [isLogin, setIsLogin] = useState(true);
+  const [isLogin, setIsLogin] =
+    useState<boolean>(true);
+
+  const [loading, setLoading] =
+    useState<boolean>(false);
 
   const handleAuth = async () => {
+    if (!email || !password) {
+      alert("Please fill all fields");
+
+      return;
+    }
+
     try {
+      setLoading(true);
+
       if (isLogin) {
         await signInWithEmailAndPassword(
           auth,
@@ -43,15 +56,32 @@ export default function AuthPage() {
 
       router.push("/");
     } catch (error: unknown) {
+<<<<<<< HEAD
       if(error instanceof Error){
         alert(error.message);
       }
+=======
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Something went wrong");
+      }
+    } finally {
+      setLoading(false);
+    }
+>>>>>>> 86ba821 (Fixed Typescript and Vercel build errors)
   };
 
   const handleLogout = async () => {
-    await signOut(auth);
+    try {
+      await signOut(auth);
 
-    alert("Logged out!");
+      alert("Logged out!");
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert(error.message);
+      }
+    }
   };
 
   return (
@@ -86,9 +116,14 @@ export default function AuthPage() {
 
           <button
             onClick={handleAuth}
-            className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition"
+            disabled={loading}
+            className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50"
           >
-            {isLogin ? "Login" : "Sign Up"}
+            {loading
+              ? "Please wait..."
+              : isLogin
+              ? "Login"
+              : "Sign Up"}
           </button>
 
           <button
