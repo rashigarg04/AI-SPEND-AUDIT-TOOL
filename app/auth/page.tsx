@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-
 import { auth } from "@/lib/firebase";
 
 import {
@@ -15,27 +14,12 @@ import { useRouter } from "next/navigation";
 export default function AuthPage() {
   const router = useRouter();
 
-  const [email, setEmail] = useState<string>("");
-
-  const [password, setPassword] =
-    useState<string>("");
-
-  const [isLogin, setIsLogin] =
-    useState<boolean>(true);
-
-  const [loading, setLoading] =
-    useState<boolean>(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLogin, setIsLogin] = useState(true);
 
   const handleAuth = async () => {
-    if (!email || !password) {
-      alert("Please fill all fields");
-
-      return;
-    }
-
     try {
-      setLoading(true);
-
       if (isLogin) {
         await signInWithEmailAndPassword(
           auth,
@@ -56,32 +40,18 @@ export default function AuthPage() {
 
       router.push("/");
     } catch (error: unknown) {
-<<<<<<< HEAD
-      if(error instanceof Error){
-        alert(error.message);
-      }
-=======
       if (error instanceof Error) {
         alert(error.message);
       } else {
-        alert("Something went wrong");
+        alert("Authentication failed");
       }
-    } finally {
-      setLoading(false);
     }
->>>>>>> 86ba821 (Fixed Typescript and Vercel build errors)
   };
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
+    await signOut(auth);
 
-      alert("Logged out!");
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        alert(error.message);
-      }
-    }
+    alert("Logged out!");
   };
 
   return (
@@ -98,9 +68,7 @@ export default function AuthPage() {
             type="email"
             placeholder="Email"
             value={email}
-            onChange={(e) =>
-              setEmail(e.target.value)
-            }
+            onChange={(e) => setEmail(e.target.value)}
             className="w-full border rounded-lg p-3"
           />
 
@@ -108,28 +76,19 @@ export default function AuthPage() {
             type="password"
             placeholder="Password"
             value={password}
-            onChange={(e) =>
-              setPassword(e.target.value)
-            }
+            onChange={(e) => setPassword(e.target.value)}
             className="w-full border rounded-lg p-3"
           />
 
           <button
             onClick={handleAuth}
-            disabled={loading}
-            className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition disabled:opacity-50"
+            className="w-full bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition"
           >
-            {loading
-              ? "Please wait..."
-              : isLogin
-              ? "Login"
-              : "Sign Up"}
+            {isLogin ? "Login" : "Sign Up"}
           </button>
 
           <button
-            onClick={() =>
-              setIsLogin(!isLogin)
-            }
+            onClick={() => setIsLogin(!isLogin)}
             className="text-indigo-600 text-sm w-full"
           >
             {isLogin
