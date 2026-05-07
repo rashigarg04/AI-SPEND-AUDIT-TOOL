@@ -80,7 +80,7 @@ export default function ResultsPage() {
         )
       : null;
 
-  const saveAudit = async () => {
+  const _saveAudit = async () => {
 
     try {
 
